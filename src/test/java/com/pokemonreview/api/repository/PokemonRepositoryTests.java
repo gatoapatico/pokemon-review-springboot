@@ -2,7 +2,6 @@ package com.pokemonreview.api.repository;
 
 import com.pokemonreview.api.models.Pokemon;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -23,9 +22,7 @@ public class PokemonRepositoryTests {
     public void PokemonRepository_SaveAll_ReturnSavedPokemon() {
 
         //Arrange
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+        Pokemon pokemon = Pokemon.builder().name("pikachu").type("electric").build();
 
         //Act
         Pokemon savedPokemon = pokemonRepository.save(pokemon);
@@ -36,80 +33,67 @@ public class PokemonRepositoryTests {
     }
 
     @Test
-    public void PokemonRepository_GetAll_ReturnMoreThenOnePokemon() {
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
-        Pokemon pokemon2 = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+    public void PokemonRepository_GetAll_ReturnsMoreThanOnePokemon() {
+        Pokemon pokemon1 = Pokemon.builder().name("pikachu").type("electric").build();
+        Pokemon pokemon2 = Pokemon.builder().name("bulbasaur").type("leaf").build();
 
-        pokemonRepository.save(pokemon);
+        pokemonRepository.save(pokemon1);
         pokemonRepository.save(pokemon2);
 
         List<Pokemon> pokemonList = pokemonRepository.findAll();
 
-        Assertions.assertThat(pokemonList).isNotNull();
         Assertions.assertThat(pokemonList.size()).isEqualTo(2);
     }
 
     @Test
-    public void PokemonRepository_FindById_ReturnPokemon() {
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+    public void PokemonRepository_FindById_ReturnsPokemon() {
+        Pokemon pokemon1 = Pokemon.builder().name("pikachu").type("electric").build();
 
-        pokemonRepository.save(pokemon);
+        pokemonRepository.save(pokemon1);
 
-        Pokemon pokemonList = pokemonRepository.findById(pokemon.getId()).get();
+        Pokemon pokemon = pokemonRepository.findById(pokemon1.getId()).orElse(null);
 
-        Assertions.assertThat(pokemonList).isNotNull();
+        Assertions.assertThat(pokemon).isNotNull();
     }
 
     @Test
-    public void PokemonRepository_FindByType_ReturnPokemonNotNull() {
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+    public void PokemonRepository_FindByType_ReturnPokemon() {
+        Pokemon pokemon = Pokemon.builder().name("pikachu").type("electric").build();
 
         pokemonRepository.save(pokemon);
 
-        Pokemon pokemonList = pokemonRepository.findByType(pokemon.getType()).get();
+        Pokemon pokemonFetched = pokemonRepository.findByType("electric").orElse(null);
 
-        Assertions.assertThat(pokemonList).isNotNull();
+        Assertions.assertThat(pokemonFetched).isNotNull();
     }
 
     @Test
-    public void PokemonRepository_UpdatePokemon_ReturnPokemonNotNull() {
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+    public void PokemonRepository_UpdatePokemon_ReturnPokemon() {
+        Pokemon pokemon = Pokemon.builder().name("pikachu").type("electric").build();
 
         pokemonRepository.save(pokemon);
 
-        Pokemon pokemonSave = pokemonRepository.findById(pokemon.getId()).get();
-        pokemonSave.setType("Electric");
-        pokemonSave.setName("Raichu");
+        Pokemon pokemonSaved = pokemonRepository.findById(pokemon.getId()).orElse(null);
+        if(pokemonSaved != null) {
+            pokemonSaved.setName("Raichu");
+            pokemonSaved.setType("Electric");
+        }
 
-        Pokemon updatedPokemon = pokemonRepository.save(pokemonSave);
+        Pokemon updatedPokemon = pokemonSaved != null ? pokemonRepository.save(pokemonSaved) : null;
 
-        Assertions.assertThat(updatedPokemon.getName()).isNotNull();
-        Assertions.assertThat(updatedPokemon.getType()).isNotNull();
+        Assertions.assertThat(updatedPokemon).isNotNull();
     }
 
     @Test
-    public void PokemonRepository_PokemonDelete_ReturnPokemonIsEmpty() {
-        Pokemon pokemon = Pokemon.builder()
-                .name("pikachu")
-                .type("electric").build();
+    public void PokemonRepository_DeletePokemon_ReturnNull() {
+        Pokemon pokemon = Pokemon.builder().name("pikachu").type("electric").build();
 
         pokemonRepository.save(pokemon);
 
         pokemonRepository.deleteById(pokemon.getId());
-        Optional<Pokemon> pokemonReturn = pokemonRepository.findById(pokemon.getId());
 
-        Assertions.assertThat(pokemonReturn).isEmpty();
+        Pokemon pokemonFetched = pokemonRepository.findById(pokemon.getId()).orElse(null);
+
+        Assertions.assertThat(pokemonFetched).isNull();
     }
-
-
 }
